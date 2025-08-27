@@ -6,9 +6,9 @@ Create a Rust interface for the Signal messaging app that can be used for accoun
 
 ## Stages
 
-### Stage 1 : Rust around HTTP
+### Stage 1 : Rust to Signal CLI
 
-Implement Signalman in Rust as a HTTP client app interacting with a SignalCli daemon.
+Implement Signalman in Rust as a client app interacting with a Signal CLI daemon of some sort on the same machine.
 
 ### Stage 2: Rust on Rust
 
