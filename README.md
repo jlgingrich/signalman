@@ -20,6 +20,7 @@ Implement Signalman in Rust, using the [libsignal](https://github.com/signalapp/
 - [Documentation for Rust library `serde`](https://docs.rs/serde_json/latest/serde_json/index.html)
 - [Documentation for Rust library `jsonrpc-types`](https://lib.rs/crates/jrpc-types)
 - [`libsignal` source code](https://github.com/signalapp/libsignal)
+- [Documentation for Rust library `clap`](https://kbknapp.github.io/clap-rs/clap/index.html)
 
 ## Progress
 
