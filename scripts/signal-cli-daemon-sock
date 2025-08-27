@@ -1,0 +1,5 @@
+#!/bin/bash
+# Grab the first linked account
+SIGNAL_CLI_ACCOUNT=$(signal-cli listAccounts | cut -d " " -f 2)
+# Start the socket daemon for that account on /run/user/1000/signal-cli/socket
+signal-cli -a $SIGNAL_CLI_ACCOUNT daemon --socket --ignore-attachments --ignore-stories

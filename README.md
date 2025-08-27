@@ -10,18 +10,21 @@ Create a Rust interface for the Signal messaging app that can be used for accoun
 
 Implement Signalman in Rust as a client app interacting with a Signal CLI daemon of some sort on the same machine.
 
-### Stage 2: Rust on Rust
+### Stage 2: Rust to Rust
 
 Implement Signalman in Rust, using the [libsignal](https://github.com/signalapp/libsignal) Rust library directly.
 
 ## References
 
-- <https://github.com/AsamK/signal-cli/blob/master/man/signal-cli-jsonrpc.5.adoc>
-- <https://github.com/signalapp/libsignal>
+- [`signal-cli`'s JSON RPC daemon MAN page](https://github.com/AsamK/signal-cli/blob/master/man/signal-cli-jsonrpc.5.adoc)
+- [Documentation for Rust library `serde`](https://docs.rs/serde_json/latest/serde_json/index.html)
+- [Documentation for Rust library `jsonrpc-types`](https://lib.rs/crates/jrpc-types)
+- [`libsignal` source code](https://github.com/signalapp/libsignal)
 
-## Next Steps
+## Progress
 
-- Now that we're in Rust, try to get [Unix sockets](https://emmanuelbosquet.com/2022/whatsaunixsocket/) working. That would be much more appropriate than a HTTP server over localhost and would almost definitely be faster.
-  - Reading from the socket would replace SSE with JSONRPC notifications
-  - Writing to the socket would still require JSONRPC
-- Naturally, there's a [library for JSONRPC](https://docs.rs/jsonrpc/latest/jsonrpc/) that works with UDS! Try to get that working.
+- Got [Unix sockets](https://emmanuelbosquet.com/2022/whatsaunixsocket/) working!
+  - Default Signal CLI socket appears to be `/run/user/1000/signal-cli/socket`.
+  - [x] Able to read and deserialize JSONRPC notifications from a socket!
+  - [ ] Figure out how to easily write JSONRPC to the socket
+- The JSON RPC library we're using is `jrpc_types`, because we already need to use `serde_json` and we're writing a client, not a server.
