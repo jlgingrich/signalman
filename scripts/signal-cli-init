@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# Remove any current links
+signal-cli --scrub-log deleteLocalAccountData 2> /dev/null
+
+set -eo pipefail
+
+
+# Generate a new link code as an ASCII art QR code
+SIGNAL_LINK_URI=
+    $(
+        dbus-send --session --dest=org.asamk.Signal --type=method_call --print-reply /org/asamk/Signal org.asamk.Signal.link string:"Signalman" \
+        | tr '\n' '\0' \
+        | sed 's/.*string //g' \
+        | sed 's/\"//g')
+        | qrencode -t utf8)
+
+# Get the account that was just linked
+SIGNAL_CLI_ACCOUNT=$(signal-cli listAccounts | cut -d " " -f 2)
+
+echo "Successfully linked to '$SIGNAL_CLI_ACCOUNT'"
+
+# Start the server under the attached user
+signal-cli -a $SIGNAL_CLI_ACCOUNT daemon --http 0.0.0.0:7583 --ignore-attachments --ignore-stories
