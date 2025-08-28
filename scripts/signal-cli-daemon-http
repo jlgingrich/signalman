@@ -1,5 +1,0 @@
-#!/bin/bash
-# Grab the first linked account
-SIGNAL_CLI_ACCOUNT=$(signal-cli listAccounts | cut -d " " -f 2)
-# Start the HTTP daemon for that account
-signal-cli -a $SIGNAL_CLI_ACCOUNT daemon --http 0.0.0.0:7583 --ignore-attachments --ignore-stories

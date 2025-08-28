@@ -1,12 +1,12 @@
-use std::fs::File;
-use std::io::Write;
-use std::io::{BufRead, BufReader};
-use std::os::unix::net::UnixStream;
-use std::path::PathBuf;
+use std::{path::PathBuf, time::Duration};
 
 use chrono::{DateTime, Local, TimeZone};
 use clap::Parser;
 use jrpc_types::JsonRpcNotification;
+use tokio::{
+    io::{self, AsyncBufReadExt, AsyncWriteExt},
+    runtime::Runtime,
+};
 
 #[derive(Parser, Debug)]
 struct Cli {
@@ -15,16 +15,29 @@ struct Cli {
     output: Option<PathBuf>,
 }
 
-fn main() -> std::io::Result<()> {
+#[tokio::main]
+async fn main() -> io::Result<()> {
     let cli = Cli::parse();
+    let handle = move |req| handle_notification(req, cli.output.clone());
 
-    let stream = UnixStream::connect(cli.socket)?;
-    let reader = BufReader::new(stream);
+    let rt = Runtime::new().unwrap();
+    let _ = rt.spawn(listen_on_socket(cli.socket, handle));
 
-    for line in reader.lines() {
-        match TryInto::<JsonRpcNotification>::try_into(line?.as_str()) {
+    std::thread::sleep(Duration::MAX);
+    Ok(())
+}
+
+async fn listen_on_socket<F>(socket_path: PathBuf, handle_ok: F) -> io::Result<()>
+where
+    F: AsyncFn(JsonRpcNotification) -> io::Result<()>,
+{
+    let stream = tokio::net::UnixStream::connect(socket_path).await?;
+    let reader = io::BufReader::new(stream);
+    let mut lines = reader.lines();
+    while let Some(line) = lines.next_line().await? {
+        match TryInto::<JsonRpcNotification>::try_into(line.as_str()) {
             Ok(req) => {
-                handle_notification(req, &cli.output)?;
+                handle_ok(req).await?;
             }
             Err(e) => {
                 println!("{}", e)
@@ -34,10 +47,10 @@ fn main() -> std::io::Result<()> {
     Ok(())
 }
 
-fn handle_notification(
+async fn handle_notification(
     req: JsonRpcNotification,
-    output_dir: &Option<PathBuf>,
-) -> Result<(), std::io::Error> {
+    output_dir: Option<PathBuf>,
+) -> io::Result<()> {
     let value = &req.params.expect("Couldn't parse JSON body");
     let unix_timestamp = value["envelope"]["timestamp"]
         .as_i64()
@@ -60,9 +73,7 @@ fn handle_notification(
 
     let full_path = file_path.join(format!("{0}_{1}.json", file_name_timestamp, &req.method));
 
-    write_to_file(full_path, serde_json::to_string_pretty(value)?)?;
-
-    Ok(())
+    write_to_file(full_path, serde_json::to_string_pretty(value)?).await
 }
 
 fn get_local_time_from_unix_seconds(milliseconds: i64) -> DateTime<Local> {
@@ -72,8 +83,7 @@ fn get_local_time_from_unix_seconds(milliseconds: i64) -> DateTime<Local> {
         .expect("Timestamp should be a valid local time")
 }
 
-fn write_to_file(path: PathBuf, contents: String) -> Result<(), std::io::Error> {
-    let mut file = File::create(path)?;
-
-    write!(file, "{}", contents)
+async fn write_to_file(path: PathBuf, contents: String) -> io::Result<()> {
+    let mut file = tokio::fs::File::create(path).await?;
+    file.write(contents.as_bytes()).await.map(|_| ())
 }

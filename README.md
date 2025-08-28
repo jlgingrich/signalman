@@ -16,11 +16,21 @@ Implement Signalman in Rust, using the [libsignal](https://github.com/signalapp/
 
 ## References
 
+### Rust Library Documentation
+
+- [`serde`](https://docs.rs/serde_json/latest/serde_json/index.html)
+- [`jsonrpc-types`](https://lib.rs/crates/jrpc-types)
+- [`clap`](https://kbknapp.github.io/clap-rs/clap/index.html)
+- [`tokio`](https://docs.rs/tokio/latest/tokio/index.html)
+
+### Signal
+
 - [`signal-cli`'s JSON RPC daemon MAN page](https://github.com/AsamK/signal-cli/blob/master/man/signal-cli-jsonrpc.5.adoc)
-- [Documentation for Rust library `serde`](https://docs.rs/serde_json/latest/serde_json/index.html)
-- [Documentation for Rust library `jsonrpc-types`](https://lib.rs/crates/jrpc-types)
 - [`libsignal` source code](https://github.com/signalapp/libsignal)
-- [Documentation for Rust library `clap`](https://kbknapp.github.io/clap-rs/clap/index.html)
+
+### Technologies
+
+- [Unix sockets in Rust tutorial](https://emmanuelbosquet.com/2022/whatsaunixsocket/)
 
 ## Progress
 
