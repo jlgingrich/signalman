@@ -1,11 +1,10 @@
 use anyhow::Context;
-use jrpc_types::JsonRpcRequest;
-use std::io::{Read, Write};
-use std::os::unix::net::UnixStream;
 use std::path::PathBuf;
-use uuid::Uuid;
+use tokio::net::UnixStream;
 
 use clap::Parser;
+
+pub type JsonRpcResult = jrpc_types::response::Status;
 
 #[derive(Parser, Debug)]
 struct Cli {
@@ -14,67 +13,109 @@ struct Cli {
     output: Option<PathBuf>,
 }
 
-fn generate_new_id() -> String {
-    Uuid::new_v4().into()
-}
-
-fn main() -> anyhow::Result<()> {
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
     // Connect to UNIX socket
-    let mut unix_stream =
-        UnixStream::connect(&cli.socket).context("Could not create stream from socket")?;
+    let unix_stream = UnixStream::connect(&cli.socket)
+        .await
+        .context("Could not create stream from socket")?;
 
-    let mut unix_stream_notifications =
-        UnixStream::connect(&cli.socket).context("Could not create stream from socket")?;
-
-    // Write request to socket
-    let next_id = generate_new_id();
-
-    let json_request = JsonRpcRequest::builder()
-        .id(next_id.as_str())
-        .method("listDevices")
-        .build();
-
-    let serialized_json_request = serde_json::to_string(&json_request)?;
-
-    println!("Sending request:\n{}", serialized_json_request);
-    writeln!(unix_stream, "{}", serialized_json_request)
-        .context("Unable to write to unix socket")?;
-
-    unix_stream
-        .shutdown(std::net::Shutdown::Write)
-        .context("Could not shutdown writing on the stream")?;
-
-    // Read response from socket
-    let mut response = String::new();
-    unix_stream
-        .read_to_string(&mut response)
-        .context("Unable to read from unix socket")?;
-
-    println!("Received response: {}", response);
-
-    /*
-    stream_write.shutdown(std:)
-
-    let mut buffer = String::new();
-    reader.read_line(&mut buffer)?;
-
-    let response = buffer.as_str();
-    println!("Response: {}", response);
-    stdout().flush()?;
-
-    match TryInto::<JsonRpcResponse>::try_into(response) {
-        Ok(req) => {
-            print!(
-                "Received response {:?} with status {:?}",
-                req.id, req.status
-            );
+    // Print results
+    match json_rpc::send_request(unix_stream, "listDevices").await? {
+        JsonRpcResult::Success(response) => {
+            println!("{}", serde_json::to_string_pretty(&response)?);
         }
-        Err(e) => {
-            println!("{}", e)
+        JsonRpcResult::Error {
+            code,
+            message,
+            data: _,
+        } => {
+            println!("Error code {}: {}", code, message);
         }
     }
-    */
+
     Ok(())
+}
+
+pub mod util {
+    pub fn generate_new_id() -> String {
+        uuid::Uuid::new_v4().into()
+    }
+}
+
+pub mod json_rpc {
+    use crate::{JsonRpcResult, util::generate_new_id};
+    use anyhow::Context;
+    use jrpc_types::{JsonRpcRequest, JsonRpcResponse};
+    use tokio::{io::AsyncReadExt, io::AsyncWriteExt, net::UnixStream};
+
+    pub async fn send_request(
+        socket: UnixStream,
+        method: &str,
+    ) -> Result<JsonRpcResult, anyhow::Error> {
+        let next_id = generate_new_id();
+
+        let request = JsonRpcRequest::builder()
+            .id(next_id.as_str())
+            .method(method)
+            .build();
+
+        send_request_internal(socket, request).await
+    }
+
+    pub async fn send_request_with<T>(
+        socket: UnixStream,
+        method: &str,
+        params: T,
+    ) -> Result<JsonRpcResult, anyhow::Error>
+    where
+        T: serde::ser::Serialize,
+    {
+        let next_id = generate_new_id();
+
+        let request = JsonRpcRequest::builder()
+            .id(next_id.as_str())
+            .method(method)
+            .params_serialize(params)?
+            .build();
+
+        send_request_internal(socket, request).await
+    }
+
+    async fn send_request_internal(
+        mut socket: UnixStream,
+        request: JsonRpcRequest,
+    ) -> Result<JsonRpcResult, anyhow::Error> {
+        let serialized_json_request = serde_json::to_string(&request)?;
+
+        socket
+            .write(serialized_json_request.as_bytes())
+            .await
+            .context("Unable to write to socket")?;
+
+        socket
+            .shutdown()
+            .await
+            .context("Unable to shutdown writing to socket")?;
+
+        let mut response = String::new();
+
+        socket
+            .read_to_string(&mut response)
+            .await
+            .context("Unable to read from socket")?;
+
+        match TryInto::<JsonRpcResponse>::try_into(response.as_str()) {
+            Ok(r) => {
+                assert!(
+                    r.id == request.id,
+                    "Received response ID that did not match request ID"
+                );
+                Ok(r.status)
+            }
+            Err(e) => Err(anyhow::Error::new(e)),
+        }
+    }
 }

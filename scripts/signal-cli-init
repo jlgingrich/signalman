@@ -1,10 +1,9 @@
 #!/bin/bash
 
-# Remove any current links
+# Remove any currently linked devices
 signal-cli --scrub-log deleteLocalAccountData 2> /dev/null
 
 set -eo pipefail
-
 
 # Generate a new link code as an ASCII art QR code
 SIGNAL_LINK_URI=

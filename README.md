@@ -18,10 +18,10 @@ Implement Signalman in Rust, using the [libsignal](https://github.com/signalapp/
 
 ### Rust Library Documentation
 
-- [`serde`](https://docs.rs/serde_json/latest/serde_json/index.html)
-- [`jsonrpc-types`](https://lib.rs/crates/jrpc-types)
-- [`clap`](https://kbknapp.github.io/clap-rs/clap/index.html)
-- [`tokio`](https://docs.rs/tokio/latest/tokio/index.html)
+- [`serde`](https://docs.rs/serde_json/latest/serde_json/index.html) for serialization
+- [`jsonrpc-types`](https://lib.rs/crates/jrpc-types) for JSON RPC standards
+- [`clap`](https://kbknapp.github.io/clap-rs/clap/index.html) for command-line parsing
+- [`tokio`](https://docs.rs/tokio/latest/tokio/index.html) for the async runtime
 
 ### Signal
 
@@ -37,5 +37,6 @@ Implement Signalman in Rust, using the [libsignal](https://github.com/signalapp/
 - Got [Unix sockets](https://emmanuelbosquet.com/2022/whatsaunixsocket/) working!
   - Default Signal CLI socket appears to be `/run/user/1000/signal-cli/socket`.
   - [x] Able to read and deserialize JSONRPC notifications from a socket!
-  - [ ] Figure out how to easily write JSONRPC to the socket
+  - [x] Able to write JSONRPC to the socket and receive the response
+  - [ ] Combine the two into one module, and show a listener that replies to messages
 - The JSON RPC library we're using is `jrpc_types`, because we already need to use `serde_json` and we're writing a client, not a server.
