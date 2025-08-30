@@ -1,12 +1,9 @@
 { pkgs ? import <nixpkgs> {} }:
   pkgs.mkShell {
     nativeBuildInputs = with pkgs.buildPackages; [
-        dbus
         qrencode
         signal-cli
-        systemdMinimal
         toybox
-        curl
     ];
 
     # Configure custom prompt

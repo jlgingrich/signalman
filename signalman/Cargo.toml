@@ -1,5 +1,5 @@
 [package]
-name = "socket-commander"
+name = "socket-receiver"
 version = "0.1.0"
 edition = "2024"
 
@@ -10,5 +10,12 @@ clap = { version = "4.5.46", features = ["derive"] }
 jrpc-types = "0.2.0"
 serde = "1.0.219"
 serde_json = "1.0.143"
-tokio = { version = "1.47.1", features = ["full"] }
+tokio = { version = "1.47.1", features = ["rt", "rt-multi-thread", "io-util", "net", "macros", "sync", "fs"] }
 uuid = { version = "1.18.0", features = ["v4"] }
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = 3
+panic = "abort"
+strip = true
