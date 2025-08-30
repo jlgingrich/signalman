@@ -8,11 +8,11 @@ Create a Rust interface for the Signal messaging app that can be used for accoun
 
 ### Stage 1 : Rust to Signal CLI
 
-Implement Signalman in Rust as a client app interacting with a Signal CLI daemon of some sort on the same machine.
+Implement Signalman in Rust as a client app interacting with a Signal CLI daemon using a Unix domain socket.
 
-### Stage 2: Rust to Rust
+### Stage 2: Total oxidification
 
-Implement Signalman in Rust, using the [libsignal](https://github.com/signalapp/libsignal) Rust library directly.
+Implement Signalman purely in Rust, using the [libsignal](https://github.com/signalapp/libsignal) Rust library directly.
 
 ## References
 
@@ -22,6 +22,8 @@ Implement Signalman in Rust, using the [libsignal](https://github.com/signalapp/
 - [`jsonrpc-types`](https://lib.rs/crates/jrpc-types) for JSON RPC standards
 - [`clap`](https://kbknapp.github.io/clap-rs/clap/index.html) for command-line parsing
 - [`tokio`](https://docs.rs/tokio/latest/tokio/index.html) for the async runtime
+  - [Spawning](https://tokio.rs/tokio/tutorial/spawning)
+  - [Channels](https://tokio.rs/tokio/tutorial/channels)
 
 ### Signal
 
