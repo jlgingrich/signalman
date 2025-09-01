@@ -1,5 +1,7 @@
 # Signalman
 
+<mark>🚨 EXTREMELY WORK IN PROGRESS 🚨</mark>
+
 ## Goals
 
 Create a Rust interface for the Signal messaging app that can be used for account automation (bots, mailing lists, etc).
