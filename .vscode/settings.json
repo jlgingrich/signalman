@@ -3,6 +3,18 @@
         "**/ARCHIVE": true,
         "**/target": true,
         ".gitignore": true,
-        ".vscode": true
+    },
+    "terminal.integrated.profiles.linux": {
+        "Nix Shell": {
+            "path": "nix-shell",
+            "args": [
+                "--pure",
+                "${workspaceFolder}/shell.nix"
+            ],
+        }
+    },
+    "terminal.integrated.defaultProfile.linux": "Nix Shell",
+    "markdownlint.config": {
+        "no-inline-html": false
     }
 }
