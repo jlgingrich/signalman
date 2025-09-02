@@ -1,9 +1,11 @@
-# Signalman
+<p align="center">
+    <mark>🚨 <b>EXTREMELY WORK IN PROGRESS</b> 🚨</mark>
+</p>
+<p align="center">
+    <img width=500px height=500px src="image.png" alt="A railway signalman holding a lantern shining a blue light into a fog">
+</p>
 
-<div style="text-align: center">
-    <mark style="display: block; width: 100%">🚨 <b>EXTREMELY WORK IN PROGRESS</b> 🚨</mark>
-    <img style="width: 100%; max-width: 400px;" src="image.png" alt="A railway signalman holding a lantern shining a blue light into a fog"/>
-</div>
+# Signalman
 
 ## Goal
 
